@@ -1,0 +1,71 @@
+{% extends "layout.html" %}{% block content %}<div class="container" style="margin-top: 50px;">
+			  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}<div class="alert alert-{{ category }}" id="notif">
+				{{ message }}
+			  </div>{% endfor %}{% endif %}{% endwith %}
+			  <h2>{{ current_user.username }}</h2>
+			  <p class="text-muted">{% if runs.count() == 0 %}no runs for the moment{% else %}{{ runs.count() }} Run{% if runs.count() > 1%}s{% endif %}{% endif %}</p>
+			  <hr>
+			  {% if runs.count() != 0 %}<table class="table table-hover table-responsive text-center">
+				<thead class="thead-dark">
+				  <tr>
+					<th scope="col" class="align-middle">Options</th>
+					<th scope="col" class="align-middle">Algorithm</th>
+					<th scope="col" class="align-middle">Number of Clusters</th>
+					<th scope="col" class="align-middle">Color</th>
+					<th scope="col" class="align-middle">Input Image</th>
+					<th scope="col" class="align-middle">Output Image(s)</th>
+					<th scope="col" class="align-middle">Compactness</th>
+					<th scope="col" class="align-middle">Separation</th>
+					<th scope="col" class="align-middle">Date Ran</th>
+				  </tr>
+				</thead>
+				<tbody class="bg-light">
+				  {% for run in runs %}<tr>
+					<th scope="col">
+					  <a role="button" class="btn btn-outline-secondary btn-sm m-1" href="{{ url_for('run_page', run_id=run.id) }}">View</a>
+					  <button type="button" class="btn btn-sm btn-outline-danger m-1" data-toggle="modal" data-target="#deleteModal" onclick="delete_run({{ run.id }});">Delete</button>
+					</th>
+					<th scope="col" class="align-middle">{{ run.algorithm }}</th>
+					<td class="align-middle">{% if run.clusters %}{{ run.clusters }}{% else %} / {% endif %}</td>
+					<td class="align-middle">{% if run.color %}{% if run.color == 'v' %}Violet{% elif run.color == 'i' %}Indigo{% elif run.color == 'b' %}Blue{% elif run.color == 'g '%}Green{% elif run.color == 'y' %}Yellow{% elif run.color == 'o' %}Orange{% else %}Red{% endif %}{% else %} / {% endif %}</td>
+					<td class="align-middle"><img src="{{ url_for('static', filename='input_images/' + run.input_image) }}" class="rounded" height="50"></td>
+					<td class="align-middle">
+						{% if run.output_image.find("', '") != -1%}
+						<div class="carousel slide carousel-fade mx-auto" id="outimg_table" data-ride="carousel" style="height: 50px;">
+						  <div class="carousel-inner">
+								{% for outimg in ast.literal_eval(run.output_image) %}
+								<div class="carousel-item {% if ast.literal_eval(run.output_image).index(outimg) == 0 %} active {% endif %}">
+									<img class="d-block w-100 rounded" src="{{ url_for('static', filename='output_images/' + outimg) }}">
+								</div>
+								{% endfor %}
+							</div>
+						</div>
+						{% else %}
+						<img src="{{ url_for('static', filename='output_images/' + run.output_image) }}" class="rounded" height="50">
+						{% endif %}
+					</td>
+					<td class="align-middle">{% if run.compactness %}{{ run.compactness }}{% else %} / {% endif %}</td>
+					<td class="align-middle">{% if run.separation %}{{ run.separation }}{% else %} / {% endif %}</td>
+					<td class="align-middle">{{ arrow.Arrow.fromdatetime(run.date_ran).humanize() }}</td>
+				  </tr>{% endfor %}
+				</tbody>
+			  </table>
+				<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+					<div class="modal-dialog" role="document">
+					  <div class="modal-content">
+						<div class="modal-header">
+						  <h5 class="modal-title" id="deleteModalLabel">Delete Run ?</h5>
+						  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						  </button>
+						</div>
+						<div class="modal-footer">
+						  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+						  <form action="" method="post" id="delete_form">
+							<button type="submit" class="btn btn-danger">Delete</button>
+						  </form>
+						</div>
+					  </div>
+					</div>
+				</div>{% endif %}
+			</div>{% endblock content %}

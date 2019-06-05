@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+		<!-- <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet"> -->
+		<link rel="shortcut icon" href="{{ url_for('static', filename='ai.png')}}" type="image/x-icon" />
+		<title>{{ title }} | Color Image Segmentation Tool</title>
+	</head>
+	<!-- <body class="bg-light" style="font-family : 'Raleway', sans-serif;"> -->
+	<body class="bg-light">
+    <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-light shadow-sm">
+      <a class="navbar-brand" href="{{ url_for('home_page') }}">Color Image Segmentation Tool</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+        <ul class="navbar-nav ml-auto my-2 my-lg-0">
+          {% if current_user.is_authenticated %}
+					<li class="nav-item dropdown active">
+						<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ current_user.username }}</a>
+						<div class="dropdown-menu dropdown-menu-right shadow-sm" aria-labelledby="navbarDropdown">
+							<a class="dropdown-item {% if title == 'Account'%} active {% endif %} " href="{{ url_for('account_page') }}">Account</a>
+							<div class="dropdown-divider"></div>
+							<a class="dropdown-item"  href="{{ url_for('logout_page') }}">Logout</a>
+						</div>
+					</li>
+					{% elif title == 'Home' %}
+					<form action="{{ url_for('login_page') }}" method="post" class="form-inline my-2 my-lg-0">
+						{{ login.hidden_tag() }}
+
+	          {{ login.username(class="form-control form-control-sm mr-sm-2 m-1", placeholder="Username") }}
+
+	          {{ login.password(class="form-control form-control-sm mr-sm-2 m-1", placeholder="Password") }}
+
+						<div class="custom-control custom-checkbox">
+          		{{ login.remember(class="custom-control-input m-1") }}
+	          	{{ login.remember.label(class="custom-control-label mr-sm-2 text-muted small pt-1") }}
+						</div>
+	         	{{ login.submit(class="btn btn-sm btn-outline-secondary my-2 my-sm-0 m-1") }}
+						<a href="{{ url_for('register_page') }}" class="ml-1 text-muted small">Sign Up</a>
+			    </form>
+					{% endif %}
+        </ul>
+      </div>
+    </nav>
+		<main role="main" class="container">
+      {% block content %}{% endblock %}
+		</main>
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+		<script class="jsbin" src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+		<script class="jsbin" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script>
+		<script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='script.js') }}"></script>
+		<script>disable();</script>
+	</body>
+</html>

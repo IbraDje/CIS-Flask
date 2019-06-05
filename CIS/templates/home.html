@@ -1,0 +1,184 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row"  style="margin-top: 50px;">
+	<div class="col-md-8">
+		<p class="lead text-center">
+			<b>A Color Image Segmentation Web Application using K-Means, FCM, PFCM and VIBGYOR Algorithms</b>
+		</p>
+		<hr>
+		<div class="alert" id="notif" style="display: none;"></div>
+		<form name="segment" method="post" action="" enctype="multipart/form-data" id="segment">
+			{{ form.hidden_tag() }}
+			<div class="form-row">
+				<div class="col form-group">
+					{{ form.algorithm.label(class="form-control-label") }}
+					{{ form.algorithm(class="form-control custom-select") }}
+					<div class="invalid-feedback" style="display: none;" id="algorithm_errors">
+						<span></span>
+					</div>
+				</div>
+				<div class="col form-group">
+					{{ form.clusters.label(class="form-control-label") }}
+					{{ form.clusters(class="form-control", type="number", min="2") }}
+					<div class="invalid-feedback" style="display: none;" id="clusters_errors">
+						<span></span>
+					</div>
+				</div>
+				<div class="col form-group">
+					{{ form.colors.label(class="form-control-label") }}
+					{{ form.colors(class="form-control custom-select", disabled="disabled") }}
+					<div class="invalid-feedback" style="display: none;" id="colors_errors">
+						<span></span>
+					</div>
+				</div>
+			</div>
+			<div class="form-row mb-1">
+				<div class="custom-file col form-group">
+					{{ form.image(class="custom-file-input", accept="image/gif, image/jpeg, image/png, image/bmp") }}
+					{{ form.image.label(class="custom-file-label") }}
+					<span class="text-danger mb-2"><small id="image_errors" style="display: none;"></small></span>
+				</div>
+				<div class="col form-group">
+					<select class="form-control custom-select" name="choices" id="choices">
+						<option value="oneImage">One image for all clusters</option>
+						<option value="manyImages">An image for each cluster</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-row border-bottom">
+				<div class="col form-group">
+					{{ form.run(class="btn btn-secondary shadow-sm") }}
+				</div>
+				<div class="col" id="loadingDiv" style="display: none;">
+					<span class="cssload-loader"><span class="cssload-loader-inner"></span></span>
+				</div>
+			</div>
+		</form>
+		<div class="row mb-3">
+			<div class="col">
+				<h4 id="results" style="display: none;">Results</h4>
+			</div>
+		</div>
+		<div class="row mb-2">
+			<div class="col">
+				<img src="{{ url_for('static', filename='input_images/default.jpg') }}" class="img-fluid border shadow-sm" alt="Input Image"  id="inputImage" style="max-width:250px; max-height: 250px;">
+				<br><small class="text-muted">Input Image</small>
+			</div>
+			<div class="col" id="outputImage" style="display: none;">
+				<div class="carousel slide carousel-fade" id="outputImages" data-ride="carousel" style="max-width: 250px; max-height: 250px;">
+				  <div class="carousel-inner">
+					</div>
+				  <a class="carousel-control-prev" href="#outputImages" role="button" data-slide="prev">
+				    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+				    <span class="sr-only">Previous</span>
+				  </a>
+				  <a class="carousel-control-next" href="#outputImages" role="button" data-slide="next">
+				    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+				    <span class="sr-only">Next</span>
+				  </a>
+				</div>
+				<small class="text-muted">Output Images</small>
+				<div class="mt-2" id="buttons" style="display: none;">
+					<a class="btn btn-sm btn-secondary shadow-sm" href="" role="button" download>Save Image</a>
+					<button type="button" class="btn btn-sm btn-secondary shadow-sm">Clear Results</button>
+				</div>
+			</div>
+		</div>
+		<div class="row table-responsive mb-2 ml-1 w-50" id="table" style="display: none;">
+			<table class="table table-borderless table-hover">
+			  <tbody>
+				<tr>
+				  <th scope="row">Compactness</th>
+				  <td class="text-center" id="wss"></td>
+				</tr>
+				<tr>
+				  <th scope="row">Separation</th>
+				  <td class="text-center" id="bss"></td>
+				</tr>
+			  </tbody>
+			</table>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<h3>Algorithms</h3>
+		<p class='text-muted'>Description of the algorithms</p>
+		<div class="accordion shadow-sm" id="accordionExample">
+			<div class="card">
+				<div class="card-header bg-light" id="headingOne">
+					<h5 class="mb-0">
+						<button class="btn btn-link text-muted" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+							K-Means
+						</button>
+					</h5>
+				</div>
+				<div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+					<div class="card-body text-justify">
+						K-Means is the most used clustering algorithm because of its ease of use and fast convergence.<br>
+						<b>How does it work?</b><br>
+						Given an initial set of K centroids (means), K-Means proceeds by alternating between two steps:
+							<ol>
+								<li>Assignment step: Assign each data point to the cluster whose mean has the least distance, this is intuitively the "nearest" mean.</li>
+								<li>Update step: Calculate the new means to be the centroids of the data points in the new clusters.</li>
+							</ol>
+							We can say that the algorithm has converged when the assignments no longer change.<hr>
+							<small><b>Source : </b><a href="https://en.wikipedia.org/wiki/K-means_clustering">K-Means Clustering - Wikipedia</a></small>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header bg-light" id="headingTwo">
+					<h5 class="mb-0">
+						<button class="btn btn-link text-muted" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+							Fuzzy C-Means
+						</button>
+					</h5>
+				</div>
+				<div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+					<div class="card-body text-justify">
+						Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header bg-light" id="headingThree">
+					<h5 class="mb-0">
+						<button class="btn btn-link text-muted" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+							Possiblistic Fuzzy C-Means
+						</button>
+					</h5>
+				</div>
+				<div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+					<div class="card-body text-justify">
+						Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header bg-light" id="headingFour">
+					<h5 class="mb-0">
+						<button class="btn btn-link text-muted" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+							VIBGYOR
+						</button>
+					</h5>
+				</div>
+				<div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordionExample">
+					<div class="card-body text-justify">
+						The distance between peaks (high points) in wave is called wavelength. The wavelength term is commonly use in electromagnetic radiation like radios waves, light waves or infrared (heat) waves. Each waves containing shapes and length. VIBGYOR is just the expression of the color of the spectrum of white light, which are Violet, Indigo, Blue, Green, Yellow, Orange and Red. Each color is associated with light of a particular wavelength. Red light has longer wavelengths than the blue light. The angle of deviation by a prism is not the same for the entire wavelength (colors) of light. The violet is the most deviated while the red is the least deviated.
+						<br>The wavelength aka VIBGYOR define the different color based on their wavelength range on the image, then segment different color light, and apply the color filter to remove the color selected.<hr>
+						<small><b>Source : </b><a href="https://dipcsc2014.wordpress.com/author/iefyerhemlock/DIP" target="_blank">CSC2014 – Colour Image Segmentation by Ramsha & Jocelyn & Steve<a></small>
+					</div>
+				</div>
+			</div>
+		</div>
+		<hr>
+		<p class="text-muted text-center">
+			<small>
+				Developped by <b>DJEMAI Ibrahim</b> , Student at <a href="http://www.ito.dz" title="Institut Nationale des Télécommunications et des Technologies de l'Information et de la Communication - Oran, Algeria" target="_blank">INTTIC</a>.<br>
+				<a href="https://github.com/IbraDje" target="_blank"><img src="{{ url_for('static', filename='github-logo.png') }}" alt="GitHub Logo" title="GitHub" height="20"></a>
+				<a href="https://www.linkedin.com/in/ibrahim-d-962860110" target="_blank"><img src="{{ url_for('static', filename='linkedin.png') }}" alt="LinkedIn Logo" title="LinkedIn" class="ml-1" height="20"></a>
+				<a href="mailto:ibrahim_djemai@yahoo.fr" target="_blank"><img src="{{ url_for('static', filename='email.png') }}" alt="Email Logo" title="Email" class="ml-1" height="20"></a>
+			</small>
+		</p>
+	</div>
+</div>
+{% endblock content %}
